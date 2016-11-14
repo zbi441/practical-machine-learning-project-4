@@ -1,0 +1,33 @@
+setwd("~/desktop/data science/project 4")
+fitdata1=read.csv("pml-training.csv")
+fitdata2=read.csv("pml-testing.csv")
+
+
+#cleaning data
+fitdata1[fitdata1==""]=NA
+fitdata2[fitdata2==""]=NA
+cleandata1=fitdata1[,colSums(is.na(fitdata1))<100]
+cleandata2=fitdata2[,colSums(is.na(fitdata2))<5]
+cleandata1=cleandata1[c(-1,-2)]
+
+
+# divid data into training and testing set
+set.seed(1233)
+library(caret)
+intrain=createDataPartition(cleandata1$class,p=0.6,list=FALSE)
+train=cleandata1[intrain,]
+test=cleandata1[-intrain,]
+
+
+# Using random forest tree method for repdiction, no need for cross validation 
+library(randomForest)
+modfit=train(classe~.,data=train,method="rf",ntree=50)
+modfit
+
+# test using test set
+pred=predict(modfit,test)
+confusionMatrix(pred,test$classe)
+
+#predict new values
+newclasse=predict(modfit,cleandata2_1)
+print(newclasse)
