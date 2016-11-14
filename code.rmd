@@ -29,5 +29,5 @@ pred=predict(modfit,test)
 confusionMatrix(pred,test$classe)
 
 #predict new values
-newclasse=predict(modfit,cleandata2_1)
+newclasse=predict(modfit,cleandata2)
 print(newclasse)
