@@ -1,0 +1,89 @@
+
+
+# To build the machine learning model, the first thing i did was to build the random forest tree model using the cleaned training data. 
+# Then the test data is used to validate the effectiveness of model
+# Finally the proved model is used to predict classes for the requested data set
+setwd("~/desktop/data science/project 4")
+fitdata1=read.csv("pml-training.csv")
+fitdata2=read.csv("pml-testing.csv")
+
+#cleaning data
+fitdata1[fitdata1==""]=NA
+fitdata2[fitdata2==""]=NA
+cleandata1=fitdata1[,colSums(is.na(fitdata1))<100]
+cleandata2=fitdata2[,colSums(is.na(fitdata2))<5]
+cleandata1=cleandata1[c(-1,-2)]
+
+# divid data into training and testing set
+set.seed(1233)
+library(caret)
+intrain=createDataPartition(cleandata1$class,p=0.6,list=FALSE)
+train=cleandata1[intrain,]
+test=cleandata1[-intrain,]
+# Using random forest tree method for repdiction, no need for cross validation 
+library(randomForest)
+library(caret)
+modfit=train(classe~.,data=train,method="rf",ntree=50)
+modfit
+#Results:
+ Random Forest 
+
+#11776 samples
+   57 predictor
+    5 classes: 'A', 'B', 'C', 'D', 'E' 
+
+No pre-processing
+Resampling: Bootstrapped (25 reps) 
+Summary of sample sizes: 11776, 11776, 11776, 11776, 11776, 11776, ... 
+Resampling results across tuning parameters:
+
+  mtry  Accuracy   Kappa      Accuracy SD   Kappa SD   
+   2    0.9872191  0.9838260  0.0025285137  0.003204436
+  38    0.9975593  0.9969118  0.0009998145  0.001265202
+  75    0.9961490  0.9951276  0.0009687978  0.001226088
+
+Accuracy was used to select the optimal model using  the largest value.
+The final value used for the model was mtry = 38. 
+
+# test using test set
+pred=predict(modfit,test)
+confusionMatrix(pred,test$classe)
+
+#Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 2232    3    0    0    0
+         B    0 1515    1    0    0
+         C    0    0 1367    5    0
+         D    0    0    0 1280    0
+         E    0    0    0    1 1442
+
+Overall Statistics
+                                          
+               Accuracy : 0.9987          
+                 95% CI : (0.9977, 0.9994)
+    No Information Rate : 0.2845          
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.9984          
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            1.0000   0.9980   0.9993   0.9953   1.0000
+Specificity            0.9995   0.9998   0.9992   1.0000   0.9998
+Pos Pred Value         0.9987   0.9993   0.9964   1.0000   0.9993
+Neg Pred Value         1.0000   0.9995   0.9998   0.9991   1.0000
+Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
+Detection Rate         0.2845   0.1931   0.1742   0.1631   0.1838
+Detection Prevalence   0.2849   0.1932   0.1749   0.1631   0.1839
+Balanced Accuracy      0.9997   0.9989   0.9992   0.9977   0.9999
+
+#predict new values
+newclasse=predict(modfit,cleandata2)
+print(newclasse)
+
+#Final answer: [1] B A B A A E D B A A B C B A E E A B B B
+Levels: A B C D E
